@@ -18,7 +18,6 @@
   Presentation (PPT): Talkify Presentation
   Research Paper: Talkify Research Paper
 
-
 # Contact Details
   For any queries or collaboration opportunities, please feel free to reach out:
 
