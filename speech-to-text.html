@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="icon" type="image/x-icon" href="/assets/img/favicon.ico">
+  <title>Speech to Text</title>
+  <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.6.0.min.js"></script>
+
+  <style>
+    body {
+            font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+      background-color:#FEF8F5; 
+        
+        }
+
+        h1 {
+            color: #4E4039;
+            text-align: center;
+        }
+
+        #container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+    .button-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #eb1e74;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-right: 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #f74a7e;
+    }
+
+    #result {
+      margin-top: 20px;
+      margin-left: 350px;
+      width: 50%;
+      font-size: 18px;
+      color: #4E4039  ;
+      font-weight: bold;
+      text-align: center;
+      padding: 10px;
+      background-color: #F3F2F0;
+      border-radius: 4px ;
+      border-color: #000;
+    }
+
+    .pulse-animation {
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.1);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .floating-image {
+        
+      
+            width: 50%;
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: floatAnimation 3s infinite;
+        }
+
+        @keyframes floatAnimation {
+            0% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+            100% { transform: translateX(-50%) translateY(0); }
+        }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Speech to Text</h1>
+
+    <div class="button-container">
+      <button id="startButton">Begin recording</button>
+      <button id="stopButton">Stop Recording</button>
+    </div>
+    
+    <p id="result"></p>
+    <img src="assets\img\speech01.png" alt="Floating Image" class="floating-image">
+  </div>
+
+  <script>
+    var subscriptionKey = '53a3231e62ad4d8388135e3308e4b632';
+    var tokenEndpoint = 'https://eastus.api.cognitive.microsoft.com/sts/v1.0/issuetoken';
+    var speechRecognitionEndpoint = 'https://eastus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1';
+
+    var authorizationToken = '';
+    
+    $.ajax({
+      type: 'POST',
+      url: tokenEndpoint,
+      headers: {
+        'Ocp-Apim-Subscription-Key': subscriptionKey
+      },
+      success: function (data) {
+        authorizationToken = data;
+      },
+      error: function (err) {
+        console.error('Error getting authorization token:', err);
+      }
+    });
+
+    var recognizer;
+
+    function startRecognition() {
+      var headers = {
+        'Authorization': 'Bearer ' + authorizationToken,
+        'Content-Type': 'audio/wav; codec=audio/pcm; samplerate=16000'
+      };
+
+      recognizer = new webkitSpeechRecognition();
+      recognizer.continuous = true;
+      recognizer.interimResults = true;
+      recognizer.lang = 'en-US';
+      recognizer.start();
+
+      recognizer.onresult = function (event) {
+        var result = event.results[event.resultIndex];
+        if (result.isFinal) {
+          $('#result').text(result[0].transcript);
+        }
+      };
+
+      recognizer.onerror = function (event) {
+        console.error('Recognition error:', event.error);
+      };
+
+      $('#startButton').addClass('pulse-animation');
+    }
+
+    function stopRecognition() {
+      if (recognizer) {
+        recognizer.stop();
+      }
+
+      $('#startButton').removeClass('pulse-animation');
+    }
+
+    $('#startButton').on('click', startRecognition);
+    $('#stopButton').on('click', stopRecognition);
+  </script>
+  
+</body>
+</html>

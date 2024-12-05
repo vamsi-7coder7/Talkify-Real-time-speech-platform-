@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Text to Speech</title>
+    <style>
+        
+        body {
+            font-family: "Open Sans", sans-serif;
+      background-color:#FEF8F5; 
+        
+        }
+
+        h1 {
+            color: #4E4039;
+            text-align: center;
+        }
+
+        #container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        textarea {
+        
+            width: 50%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5\px;
+            resize: vertical;
+            margin-left: 350px;
+        }
+        
+        .button-container {
+      text-align: center;
+    }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #eb1e7a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+        background-color: #f74aaf;
+        }
+
+        audio {
+            display: none;
+        }
+        
+
+        @keyframes floatAnimation {
+            0% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+            100% { transform: translateX(-50%) translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Text to Speech</h1>
+    <textarea id="text" rows="4" cols="50" placeholder="Enter your text"></textarea>
+    <br>
+    <div class="button-container">
+        <button onclick="convertTextToSpeech()">Convert to Speech</button>
+    </div>
+    
+    <br>
+    <audio id="audio"></audio>
+    <script>
+       function convertTextToSpeech() {
+    var text = document.getElementById('text').value;
+    var subscriptionKey = '53a3231e62ad4d8388135e3308e4b632'; 
+
+    var apiUrl = 'https://eastus.tts.speech.microsoft.com/cognitiveservices/v1';
+    var headers = new Headers();
+    headers.append('Ocp-Apim-Subscription-Key', subscriptionKey);
+    headers.append('Content-Type', 'application/ssml+xml');
+    headers.append('X-Microsoft-OutputFormat', 'riff-24khz-16bit-mono-pcm');
+    headers.append('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3');
+
+    var body = '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">' +
+        '<voice name="en-US-AriaNeural">' + text + '</voice></speak>';
+
+    fetch(apiUrl, {
+        method: 'POST',
+        headers: headers,
+        body: body
+    })
+    .then(response => response.arrayBuffer())
+    .then(audioData => {
+        var audioContext = new AudioContext();
+        audioContext.decodeAudioData(audioData, function(buffer) {
+            var audioSource = audioContext.createBufferSource();
+            audioSource.buffer = buffer;
+            audioSource.connect(audioContext.destination);
+            audioSource.start(0);
+        }, function(e) {
+            console.error('Error decoding audio data:', e);
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+    </script>
+</body>
+</html>
